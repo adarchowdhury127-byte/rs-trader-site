@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RS Trader Sabbir</title>
+<meta name="description" content="Trading • Content • Community">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+Bengali:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   RS TRADER SABBIR — link-in-bio site
+   Design tokens
+   ============================================================ */
+:root{
+  --bg-deep:#0a0a10;
+  --bg-panel:#14141d;
+  --bg-panel-2:#191922;
+  --line:#26262f;
+  --gold:#e7b13c;
+  --gold-bright:#ffd873;
+  --up:#23d5ab;
+  --down:#ff5c6c;
+  --text:#f2efe6;
+  --text-muted:#9d9aa8;
+  --radius:16px;
+  --font-display:'Sora','Noto Sans Bengali', sans-serif;
+  --font-body:'IBM Plex Sans','Noto Sans Bengali', sans-serif;
+}
+
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--bg-deep);
+  color:var(--text);
+  font-family:var(--font-body);
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  position:relative;
+  overflow-x:hidden;
+}
+
+/* subtle candlestick texture behind everything */
+.market-noise{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  opacity:.35;
+  background:
+    radial-gradient(circle at 15% 20%, color-mix(in srgb, var(--gold) 6%, transparent), transparent 40%),
+    radial-gradient(circle at 85% 75%, rgba(35,213,171,.05), transparent 45%);
+}
+
+/* warm golden ambient glow washing down from the top of the page */
+.top-glow{
+  position:fixed;
+  top:0; left:0; right:0;
+  height:520px;
+  z-index:0;
+  pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 50% -10%,
+    color-mix(in srgb, var(--gold) 55%, transparent) 0%,
+    color-mix(in srgb, var(--gold) 22%, transparent) 30%,
+    color-mix(in srgb, var(--gold) 6%, transparent) 55%,
+    transparent 75%);
+}
+
+.wrap{
+  position:relative;
+  z-index:1;
+  max-width:480px;
+  margin:0 auto;
+  padding:28px 20px 60px;
+}
+
+/* ---------- ticker strip ---------- */
+.ticker{
+  overflow:hidden;
+  white-space:nowrap;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  background:var(--bg-panel);
+  padding:8px 0;
+  margin-bottom:22px;
+  border-radius:10px;
+}
+.ticker-track{
+  display:inline-block;
+  padding-left:100%;
+  animation:scrollTicker 22s linear infinite;
+  font-family:var(--font-display);
+  font-size:12px;
+  letter-spacing:.02em;
+}
+.ticker-track span{margin-right:28px;color:var(--text-muted);}
+.ticker-track span.up{color:var(--up);}
+.ticker-track span.down{color:var(--down);}
+@keyframes scrollTicker{
+  0%{transform:translateX(0);}
+  100%{transform:translateX(-100%);}
+}
+@media (prefers-reduced-motion:reduce){
+  .ticker-track{animation:none; padding-left:0;}
+}
+
+/* ---------- hero / profile ---------- */
+.hero{
+  text-align:center;
+  margin-bottom:26px;
+}
+.avatar-frame{
+  position:relative;
+  width:132px;
+  height:132px;
+  margin:0 auto 18px;
+}
+.avatar-ring{
+  position:absolute; inset:0;
+  border-radius:50%;
+  padding:4px;
+  background:conic-gradient(from 180deg, var(--gold) 0%, var(--gold-bright) 25%, var(--gold) 50%, color-mix(in srgb, var(--gold) 60%, black) 75%, var(--gold) 100%);
+  animation:spin 7s linear infinite;
+  box-shadow:0 0 22px color-mix(in srgb, var(--gold) 45%, transparent), 0 0 6px color-mix(in srgb, var(--gold-bright) 50%, transparent);
+}
+@media (prefers-reduced-motion:reduce){ .avatar-ring{animation:none;} }
+@keyframes spin{to{transform:rotate(360deg);}}
+.avatar-ring::before{
+  content:"";
+  position:absolute; inset:4px;
+  border-radius:50%;
+  background:var(--bg-deep);
+}
+.avatar-img{
+  position:absolute; inset:8px;
+  border-radius:50%;
+  overflow:hidden;
+  background:var(--bg-panel);
+}
+.avatar-img img{width:100%;height:100%;object-fit:cover;display:block;}
+
+.chart-spark{
+  position:absolute;
+  right:-6px;
+  bottom:2px;
+  background:var(--bg-deep);
+  border:1px solid var(--line);
+  border-radius:50%;
+  width:38px;height:38px;
+  display:flex;align-items:center;justify-content:center;
+}
+
+.brand-name{
+  font-family:var(--font-display);
+  font-size:26px;
+  font-weight:700;
+  letter-spacing:.01em;
+  margin:0 0 4px;
+}
+.brand-tag{
+  color:var(--text-muted);
+  font-size:14px;
+  margin:0;
+}
+
+/* ---------- welcome panel ---------- */
+.panel{
+  background:var(--bg-panel);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:22px 20px;
+  margin-bottom:22px;
+}
+.panel h2{
+  font-family:var(--font-display);
+  font-size:18px;
+  margin:0 0 10px;
+}
+.panel p{
+  color:#c9c6d3;
+  font-size:14px;
+  line-height:1.7;
+  margin:0 0 10px;
+}
+.panel p:last-child{margin-bottom:0;}
+
+.official-pill{
+  display:block;
+  width:fit-content;
+  margin:18px auto 0;
+  padding:8px 18px;
+  border:1px solid var(--gold);
+  color:var(--gold-bright);
+  font-family:var(--font-display);
+  font-size:12px;
+  letter-spacing:.04em;
+  border-radius:999px;
+  text-decoration:none;
+}
+
+/* ---------- link list ---------- */
+.links{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  margin-bottom:30px;
+}
+.link-item{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  background:var(--bg-panel);
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:12px 18px;
+  text-decoration:none;
+  color:var(--text);
+  transition:border-color .15s ease, transform .1s ease;
+}
+.link-item:hover{border-color:var(--gold);}
+.link-item:active{transform:scale(.98);}
+.link-icon{
+  width:38px;height:38px;
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;
+  flex-shrink:0;
+  background:var(--bg-panel-2);
+}
+.link-icon svg{width:20px;height:20px;display:block;}
+.link-label{
+  font-weight:600;
+  font-size:15px;
+  flex:1;
+}
+.link-arrow{color:var(--text-muted); font-size:14px;}
+
+/* ---------- section heading ---------- */
+.section-title{
+  font-family:var(--font-display);
+  font-size:19px;
+  margin:0 0 14px;
+  text-align:center;
+}
+.section-sub{
+  text-align:center;
+  color:var(--text-muted);
+  font-size:13px;
+  margin:-10px 0 18px;
+}
+
+/* ---------- reviews ---------- */
+.reviews{
+  margin-bottom:30px;
+}
+.reviews-scroll{
+  display:flex;
+  gap:12px;
+  overflow-x:auto;
+  padding:4px 2px 12px;
+  scroll-snap-type:x mandatory;
+}
+.reviews-scroll::-webkit-scrollbar{height:5px;}
+.reviews-scroll::-webkit-scrollbar-thumb{background:var(--line); border-radius:10px;}
+.review-card{
+  scroll-snap-align:start;
+  flex:0 0 240px;
+  background:var(--bg-panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:16px;
+}
+.review-stars{color:var(--gold); font-size:14px; margin-bottom:8px;}
+.review-shot{
+  width:100%;
+  max-height:150px;
+  object-fit:cover;
+  border-radius:9px;
+  margin-bottom:10px;
+  cursor:zoom-in;
+  display:block;
+  border:1px solid var(--line);
+}
+.review-text{
+  font-size:13.5px;
+  color:#d6d3df;
+  line-height:1.55;
+  margin:0 0 10px;
+}
+.review-foot{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:12.5px;
+}
+.review-name{font-weight:600;color:var(--text);}
+.review-link{color:var(--up); text-decoration:none;}
+.reviews-empty{
+  text-align:center;
+  color:var(--text-muted);
+  font-size:13px;
+  padding:20px;
+  border:1px dashed var(--line);
+  border-radius:14px;
+}
+
+/* ---------- developer section ---------- */
+.dev-card{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  background:var(--bg-panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:16px;
+  margin-bottom:26px;
+}
+.dev-avatar{
+  width:46px;height:46px;
+  border-radius:12px;
+  background:linear-gradient(135deg,var(--gold),var(--up));
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);
+  font-weight:700;
+  color:#0a0a10;
+  flex-shrink:0;
+}
+.dev-info{flex:1;}
+.dev-role{font-size:11.5px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin:0 0 2px;}
+.dev-name{font-weight:600; font-size:14.5px; margin:0 0 2px;}
+.dev-links{display:flex; gap:8px; flex-wrap:wrap;}
+.dev-links a{
+  display:inline-flex; align-items:center; gap:6px;
+  color:var(--text); font-size:12px; text-decoration:none;
+  background:var(--bg-panel-2); border:1px solid var(--line);
+  padding:6px 10px; border-radius:999px;
+}
+.dev-links a svg{width:14px;height:14px;flex-shrink:0;}
+.dev-links a:hover{border-color:var(--gold);}
+
+.avatar-upload-preview{
+  width:64px;height:64px; border-radius:50%; overflow:hidden;
+  background:var(--bg-panel-2); border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-weight:700; color:var(--text-muted);
+  flex-shrink:0;
+}
+.avatar-upload-preview img{width:100%;height:100%;object-fit:cover;}
+.upload-row{display:flex; align-items:center; gap:14px; margin-bottom:6px;}
+.icon-preview-row{display:flex; align-items:center; gap:10px;}
+.icon-preview-box{
+  width:38px;height:38px;border-radius:50%;background:var(--bg-panel-2);
+  border:1px solid var(--line); display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.icon-preview-box svg{width:20px;height:20px;}
+.shot-preview{
+  width:100%; max-height:130px; object-fit:cover; border-radius:8px;
+  border:1px solid var(--line); margin-top:8px; display:none;
+}
+.shot-preview.has-img{display:block;}
+
+/* ---------- footer ---------- */
+.foot{
+  text-align:center;
+  color:var(--text-muted);
+  font-size:12px;
+  padding-top:6px;
+  border-top:1px solid var(--line);
+}
+.foot a{color:var(--text-muted);}
+
+/* ---------- admin ---------- */
+.admin-body{background:var(--bg-deep); color:var(--text); font-family:var(--font-body); min-height:100vh;}
+.admin-wrap{max-width:640px; margin:0 auto; padding:28px 18px 80px;}
+.admin-title{font-family:var(--font-display); font-size:22px; margin-bottom:4px;}
+.admin-sub{color:var(--text-muted); font-size:13px; margin-bottom:24px;}
+.admin-card{background:var(--bg-panel); border:1px solid var(--line); border-radius:14px; padding:18px; margin-bottom:18px;}
+.admin-card h3{font-family:var(--font-display); font-size:15px; margin:0 0 14px;}
+.field{margin-bottom:12px;}
+.field label{display:block; font-size:12.5px; color:var(--text-muted); margin-bottom:5px;}
+.field input, .field textarea, .field select{
+  width:100%;
+  background:var(--bg-panel-2);
+  border:1px solid var(--line);
+  color:var(--text);
+  padding:10px 12px;
+  border-radius:8px;
+  font-family:var(--font-body);
+  font-size:14px;
+}
+.field textarea{resize:vertical; min-height:64px;}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  background:var(--gold); color:#161108; border:none;
+  font-weight:700; font-family:var(--font-display); font-size:13.5px;
+  padding:10px 18px; border-radius:8px; cursor:pointer;
+}
+.btn.secondary{background:transparent; color:var(--text); border:1px solid var(--line);}
+.btn.danger{background:transparent; color:var(--down); border:1px solid var(--down);}
+.btn:active{transform:scale(.98);}
+.list-item{
+  display:flex; justify-content:space-between; align-items:flex-start;
+  gap:10px; border:1px solid var(--line); border-radius:10px; padding:12px; margin-bottom:10px;
+  background:var(--bg-panel-2);
+}
+.list-item .meta{font-size:13px; flex:1;}
+.list-item .meta strong{display:block; margin-bottom:2px;}
+.list-item .meta span{color:var(--text-muted); font-size:12px;}
+.item-actions{display:flex; gap:6px; flex-shrink:0;}
+.item-actions button{
+  border:1px solid var(--line); background:transparent; color:var(--text-muted);
+  padding:5px 9px; border-radius:6px; font-size:11.5px; cursor:pointer;
+}
+.login-box{max-width:340px; margin:80px auto; text-align:center;}
+.badge-ok{color:var(--up); font-size:12.5px; margin-left:8px;}
+.toolbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;}
+.tabs{display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;}
+.tab-btn{
+  background:var(--bg-panel); border:1px solid var(--line); color:var(--text-muted);
+  padding:8px 14px; border-radius:999px; font-size:13px; cursor:pointer; font-family:var(--font-body);
+}
+.tab-btn.active{background:var(--gold); color:#161108; border-color:var(--gold); font-weight:700;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+.hint{font-size:12px; color:var(--text-muted); margin-top:-4px; margin-bottom:14px; line-height:1.6;}
+
+/* ---------------- promo banner ---------------- */
+.promo-banner{
+  display:block;
+  text-decoration:none;
+  position:relative;
+  overflow:hidden;
+  border-radius:12px;
+  padding:12px 16px;
+  margin-bottom:16px;
+  text-align:center;
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:13.5px;
+  color:#161108;
+  background:linear-gradient(120deg, var(--gold-bright), var(--gold), var(--gold-bright));
+  background-size:200% 100%;
+  animation:bannerShift 4s ease-in-out infinite;
+}
+@keyframes bannerShift{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+@media (prefers-reduced-motion:reduce){ .promo-banner{animation:none;} }
+
+/* ---------------- developer section (locked, unique styling) ---------------- */
+.dev-section{
+  position:relative;
+  border-radius:18px;
+  padding:2px;
+  margin-bottom:26px;
+  background:linear-gradient(135deg, var(--gold), transparent 40%, var(--up) 100%);
+}
+.dev-card{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  background:var(--bg-panel);
+  border-radius:16px;
+  padding:20px;
+  margin-bottom:0;
+  border:none;
+}
+.dev-top{display:flex; align-items:center; gap:14px;}
+.dev-badge{
+  display:inline-block;
+  font-size:10.5px;
+  font-weight:700;
+  letter-spacing:.05em;
+  color:var(--bg-deep);
+  background:var(--up);
+  padding:3px 9px;
+  border-radius:999px;
+  margin-bottom:6px;
+}
+.dev-cta{
+  display:block;
+  text-align:center;
+  text-decoration:none;
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:13.5px;
+  color:#161108;
+  background:linear-gradient(90deg, var(--gold), var(--gold-bright));
+  padding:11px 16px;
+  border-radius:10px;
+  margin-top:4px;
+}
+
+</style>
+</head>
+<body data-page="public">
+  <div class="top-glow"></div>
+  <div class="market-noise"></div>
+  <div class="wrap">
+
+    <a class="promo-banner" id="promoBanner" href="#" target="_blank" rel="noopener" style="display:none;"></a>
+
+    <!-- live-price style ticker ornament -->
+    <div class="ticker" aria-hidden="true">
+      <div class="ticker-track">
+        <span class="up">EUR/USD ▲ 1.0842</span>
+        <span class="down">GOLD ▼ 2,362.10</span>
+        <span class="up">BTC/USD ▲ 64,120</span>
+        <span class="up">NASDAQ ▲ 18,412</span>
+        <span class="down">USD/JPY ▼ 156.20</span>
+        <span class="up">EUR/USD ▲ 1.0842</span>
+        <span class="down">GOLD ▼ 2,362.10</span>
+        <span class="up">BTC/USD ▲ 64,120</span>
+      </div>
+    </div>
+
+    <div class="hero">
+      <div class="avatar-frame">
+        <div class="avatar-ring"></div>
+        <div class="avatar-img" id="avatarImg"></div>
+        <div class="chart-spark" title="Live market">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M3 17l5-6 4 4 8-10" stroke="#23d5ab" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M15 5h5v5" stroke="#23d5ab" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      <h1 class="brand-name" id="brandName">RS TRADER SABBIR</h1>
+      <p class="brand-tag" id="brandTag">Trading • Content • Community</p>
+    </div>
+
+    <div class="panel">
+      <h2 id="welcomeTitle">Welcome to RS Trader Sabbir</h2>
+      <p id="welcomeText1"></p>
+      <p id="welcomeText2"></p>
+      <a class="official-pill" id="officialPill" href="#links">OFFICIAL LINKS</a>
+    </div>
+
+    <div class="links" id="linksList"></div>
+
+    <div class="reviews" id="reviews">
+      <h2 class="section-title">রিভিউ</h2>
+      <p class="section-sub">যারা কাজ করেছেন, তারা যা বলছেন</p>
+      <div class="reviews-scroll" id="reviewsList"></div>
+    </div>
+
+    <div class="foot">
+      © <span id="year"></span> <span id="footBrand">RS TRADER SABBIR</span> · All rights reserved
+    </div>
+  </div>
+
+<script>
+/* ============================================================
+   Shared data layer
+   Data lives in localStorage on whichever browser edits it via
+   /admin.html. The public page (index.html) reads the same key,
+   so admin + visitor need to be the same browser/device to share
+   live data — see README for notes on hooking up a real database.
+   ============================================================ */
+const STORAGE_KEY = 'rsts_data_v1';
+const CACHE_KEY = 'rsts_cache_v1';
+const API_URL = '/api/data';
+
+/* ---------------- brand icon library (inline SVG, currentColor) ---------------- */
+const ICONS = {
+  telegram: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.5 3.5L2.75 10.9c-1.05.42-1.04 1.02-.18 1.28l4.79 1.5 1.86 5.71c.23.62.4.87.8.87.34 0 .5-.16.7-.35l1.87-1.82 4.06 3c.75.42 1.29.2 1.48-.7l2.68-12.62c.28-1.15-.44-1.66-1.31-1.27z" fill="#29A9EA"/></svg>`,
+  youtube: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="5" width="21" height="14" rx="4" fill="#FF0000"/><path d="M10 8.8v6.4l6-3.2-6-3.2z" fill="#fff"/></svg>`,
+  tiktok: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 2h-3v13.2a2.6 2.6 0 1 1-2.1-2.55v-3.05a5.65 5.65 0 1 0 5.1 5.6V9.1a6.9 6.9 0 0 0 4.1 1.35V7.5a4 4 0 0 1-4.1-4.1V2z" fill="#fff"/></svg>`,
+  facebook: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10.5" fill="#1877F2"/><path d="M13.6 21.4v-7.2h2.4l.36-2.8h-2.76V9.6c0-.81.22-1.36 1.39-1.36h1.48V5.73c-.26-.03-1.14-.11-2.17-.11-2.15 0-3.62 1.31-3.62 3.72v2.07H8.3v2.8h2.38v7.2h2.92z" fill="#fff"/></svg>`,
+  whatsapp: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10.5" fill="#25D366"/><path d="M12.02 6.4a5.6 5.6 0 0 0-4.77 8.53l-.62 2.27 2.33-.61a5.6 5.6 0 1 0 3.06-10.19zm0 1.2a4.4 4.4 0 0 1 2.5 8.02l-.15.1.1.35c.06.2-.03.42-.22.53a.42.42 0 0 1-.4 0l-.31-.16-.12.04a4.4 4.4 0 0 1-1.4.23 4.4 4.4 0 0 1 0-8.8v-.31z" fill="#fff"/><path d="M10.1 9.3c.14-.3.28-.3.4-.3h.32c.1 0 .25 0 .38.3.15.32.5 1.16.55 1.24.05.1.08.2.02.32-.06.13-.1.2-.2.3-.1.12-.2.26-.29.35-.1.1-.2.2-.08.4.11.2.5.85 1.09 1.37.75.68 1.37.9 1.57 1 .2.1.32.09.44-.05.12-.14.5-.58.63-.78.13-.2.26-.16.43-.1.18.07 1.1.53 1.3.63.2.1.33.15.38.23.05.09.05.5-.12.98-.17.48-1 .93-1.4.98-.36.06-.8.08-1.3-.08a10 10 0 0 1-1.13-.42 8.4 8.4 0 0 1-3.03-2.68 6.9 6.9 0 0 1-1.16-2.35c-.09-.4-.15-.87.08-1.2z" fill="#25D366"/></svg>`,
+  discord: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#5865F2"/><path d="M16.9 7.6a10.6 10.6 0 0 0-2.63-.82l-.16.29c.94.23 1.83.6 2.63 1.14a8.9 8.9 0 0 0-8.5 0c.8-.53 1.7-.9 2.64-1.14l-.16-.29c-.9.16-1.79.43-2.63.82-1.66 2.44-2.1 4.83-1.88 7.18a10.7 10.7 0 0 0 3.24 1.63l.4-.65a6.8 6.8 0 0 1-1.05-.5c.09-.06.18-.13.26-.2 2.02.92 4.21.92 6.2 0 .09.07.18.14.27.2-.34.2-.7.37-1.06.5l.4.65a10.6 10.6 0 0 0 3.24-1.63c.26-2.72-.44-5.09-1.87-7.18zM10.4 13.6c-.6 0-1.09-.55-1.09-1.22 0-.68.48-1.23 1.09-1.23.62 0 1.1.56 1.1 1.23 0 .67-.48 1.22-1.1 1.22zm4.2 0c-.6 0-1.09-.55-1.09-1.22 0-.68.48-1.23 1.1-1.23.61 0 1.1.56 1.09 1.23 0 .67-.48 1.22-1.1 1.22z" fill="#fff"/></svg>`,
+  website: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="#e7b13c" stroke-width="1.6"/><path d="M3 12h18M12 3c2.3 2.6 3.5 5.7 3.5 9s-1.2 6.4-3.5 9c-2.3-2.6-3.5-5.7-3.5-9s1.2-6.4 3.5-9z" stroke="#e7b13c" stroke-width="1.6"/></svg>`,
+  dollar: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10.5" fill="#e7b13c"/><path d="M12 6.5v11M15 8.7c0-1.1-1.3-2-3-2s-3 .9-3 2c0 1.1 1.3 1.6 3 2s3 .9 3 2c0 1.1-1.3 2-3 2s-3-.9-3-2" stroke="#161108" stroke-width="1.4" stroke-linecap="round"/></svg>`,
+  chart: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 17l5-6 4 4 8-10" stroke="#23d5ab" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 5h5v5" stroke="#23d5ab" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+};
+const ICON_KEYS = Object.keys(ICONS);
+
+/* ---------------- dynamic accent color from uploaded logo ---------------- */
+function rgbToHsl(r, g, b){
+  r/=255; g/=255; b/=255;
+  const max = Math.max(r,g,b), min = Math.min(r,g,b);
+  let h, s, l = (max+min)/2;
+  if(max === min){ h = 0; s = 0; }
+  else{
+    const d = max - min;
+    s = l > 0.5 ? d/(2-max-min) : d/(max+min);
+    switch(max){
+      case r: h = (g-b)/d + (g<b?6:0); break;
+      case g: h = (b-r)/d + 2; break;
+      default: h = (r-g)/d + 4;
+    }
+    h /= 6;
+  }
+  return [h*360, s*100, l*100];
+}
+function hslToRgb(h, s, l){
+  h/=360; s/=100; l/=100;
+  if(s === 0){ const v = Math.round(l*255); return [v,v,v]; }
+  const hue2rgb = (p,q,t) => {
+    if(t<0) t+=1; if(t>1) t-=1;
+    if(t<1/6) return p+(q-p)*6*t;
+    if(t<1/2) return q;
+    if(t<2/3) return p+(q-p)*(2/3-t)*6;
+    return p;
+  };
+  const q = l < 0.5 ? l*(1+s) : l+s-l*s;
+  const p = 2*l-q;
+  return [
+    Math.round(hue2rgb(p,q,h+1/3)*255),
+    Math.round(hue2rgb(p,q,h)*255),
+    Math.round(hue2rgb(p,q,h-1/3)*255)
+  ];
+}
+
+function applyDynamicTheme(avatarUrl){
+  const root = document.documentElement;
+  if(!avatarUrl){
+    root.style.removeProperty('--gold');
+    root.style.removeProperty('--gold-bright');
+    return;
+  }
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    try{
+      const size = 48;
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, size, size);
+      const data = ctx.getImageData(0, 0, size, size).data;
+      let r=0, g=0, b=0, count=0;
+      for(let i=0; i<data.length; i+=4){
+        const alpha = data[i+3];
+        if(alpha < 200) continue;
+        const br = (data[i]+data[i+1]+data[i+2])/3;
+        if(br < 25 || br > 235) continue; // skip near-black / near-white pixels
+        r += data[i]; g += data[i+1]; b += data[i+2];
+        count++;
+      }
+      if(count < size){ // not enough colorful pixels, fall back to full average
+        r=0; g=0; b=0; count=0;
+        for(let i=0; i<data.length; i+=4){
+          if(data[i+3] < 200) continue;
+          r += data[i]; g += data[i+1]; b += data[i+2];
+          count++;
+        }
+      }
+      if(count === 0) return;
+      r = r/count; g = g/count; b = b/count;
+      let [h, s, l] = rgbToHsl(r, g, b);
+      s = Math.max(45, Math.min(90, s));
+      const lBase = Math.max(42, Math.min(62, l));
+      const [br0, bg0, bb0] = hslToRgb(h, s, lBase);
+      const [br1, bg1, bb1] = hslToRgb(h, s, Math.min(80, lBase + 18));
+      root.style.setProperty('--gold', `rgb(${br0},${bg0},${bb0})`);
+      root.style.setProperty('--gold-bright', `rgb(${br1},${bg1},${bb1})`);
+    }catch(e){
+      // canvas may be CORS-tainted for cross-origin URLs without proper headers; keep default gold
+    }
+  };
+  img.src = avatarUrl;
+}
+
+function renderIcon(key, fallbackText){
+  if(key && ICONS[key]) return ICONS[key];
+  if(fallbackText) return escapeHtml(fallbackText);
+  return ICONS.website;
+}
+
+const DEFAULT_DATA = {
+  profile: {
+    name: 'RS TRADER SABBIR',
+    tagline: 'Trading • Content • Community',
+    avatarUrl: '',
+    welcomeTitle: 'Welcome to RS Trader Sabbir',
+    welcomeText1: 'এখানে আপনি আমার Trading, Market Analysis এবং অন্যান্য গুরুত্বপূর্ণ আপডেট পাবেন। তাছাড়াও প্রত্যেকটা নিউজ সিগনাল ফ্রিতে পাবেন পাবলিক টেলিগ্রাম চ্যানেলে।',
+    welcomeText2: 'আমার Official Social Media এবং Trading Links নিচে দেওয়া আছে।',
+    officialLinksLabel: 'OFFICIAL LINKS',
+    officialLinksUrl: '#links',
+    bannerEnabled: true,
+    bannerText: '🎁 Giveaway পেতে এখনই Telegram-এ জয়েন করুন',
+    bannerLink: 'https://t.me/'
+  },
+  links: [
+    { id: 'l1', icon: 'telegram', customIcon: '', label: 'GET FREE NEWS SIGNAL', url: 'https://t.me/' },
+    { id: 'l2', icon: 'youtube', customIcon: '', label: 'WATCH ON YOUTUBE', url: 'https://youtube.com/' },
+    { id: 'l3', icon: 'tiktok', customIcon: '', label: 'FOLLOW ON TIKTOK', url: 'https://tiktok.com/' },
+    { id: 'l4', icon: 'facebook', customIcon: '', label: 'FOLLOW ON FACEBOOK', url: 'https://facebook.com/' },
+    { id: 'l5', icon: 'dollar', customIcon: '', label: 'OPEN TRADING ACCOUNT', url: '#' }
+  ],
+  reviews: [
+    { id: 'r1', name: 'Tanvir', stars: 5, text: 'সিগন্যাল গুলো অনেক accurate, অনেক উপকার পেয়েছি।', link: '', image: '' },
+    { id: 'r2', name: 'Mahin', stars: 5, text: 'Market analysis গুলো খুবই সহজভাবে বোঝানো হয়।', link: '', image: '' },
+    { id: 'r3', name: 'Rafi', stars: 4, text: 'কমিউনিটি সাপোর্ট চমৎকার, রেসপন্স ফাস্ট।', link: '', image: '' }
+  ]
+};
+
+function mergeWithDefaults(parsed){
+  if(!parsed) return structuredClone(DEFAULT_DATA);
+  return {
+    profile: { ...DEFAULT_DATA.profile, ...(parsed.profile||{}) },
+    links: Array.isArray(parsed.links) ? parsed.links : DEFAULT_DATA.links,
+    reviews: Array.isArray(parsed.reviews) ? parsed.reviews : DEFAULT_DATA.reviews
+  };
+}
+
+/* Fetch the live, shared site data from the server (Vercel KV).
+   Falls back to the last-known local cache, then to defaults,
+   if the API/database isn't reachable yet. */
+async function loadData(){
+  try{
+    const res = await fetch(API_URL, { cache: 'no-store' });
+    if(res.ok){
+      const json = await res.json();
+      if(json && json.data){
+        localStorage.setItem(CACHE_KEY, JSON.stringify(json.data));
+        return mergeWithDefaults(json.data);
+      }
+      // no data saved on the server yet
+      return structuredClone(DEFAULT_DATA);
+    }
+  }catch(e){
+    // network/API/database not available — fall through to cache
+  }
+  try{
+    const cached = localStorage.getItem(CACHE_KEY);
+    if(cached) return mergeWithDefaults(JSON.parse(cached));
+  }catch(e){}
+  return structuredClone(DEFAULT_DATA);
+}
+
+/* Save to the server (Vercel KV) so every visitor, on every device,
+   sees the same content. Requires the shared admin password. */
+async function saveData(data, adminPass){
+  localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-pass': adminPass || '' },
+    body: JSON.stringify(data)
+  });
+  if(!res.ok){
+    const info = await res.json().catch(() => ({}));
+    throw new Error(info.error === 'wrong password' ? 'wrong-password' : (info.error || 'save-failed'));
+  }
+  return true;
+}
+
+function escapeHtml(str){
+  return String(str ?? '').replace(/[&<>"']/g, s => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[s]));
+}
+
+function starString(n){
+  const full = Math.max(0, Math.min(5, Number(n)||0));
+  return '★★★★★'.slice(0, full) + '☆☆☆☆☆'.slice(0, 5-full);
+}
+
+/* ---------------- render public page ---------------- */
+async function renderPublicPage(){
+  const data = await loadData();
+  const { profile, links, reviews } = data;
+
+  document.getElementById('brandName').textContent = profile.name;
+  document.getElementById('brandTag').textContent = profile.tagline;
+  document.getElementById('welcomeTitle').textContent = profile.welcomeTitle;
+  document.getElementById('welcomeText1').textContent = profile.welcomeText1;
+  document.getElementById('welcomeText2').textContent = profile.welcomeText2;
+  document.getElementById('officialPill').textContent = profile.officialLinksLabel;
+  document.getElementById('officialPill').href = profile.officialLinksUrl || '#links';
+  document.title = profile.name;
+
+  const bannerEl = document.getElementById('promoBanner');
+  if(profile.bannerEnabled && profile.bannerText){
+    bannerEl.style.display = 'block';
+    bannerEl.textContent = profile.bannerText;
+    bannerEl.href = profile.bannerLink || '#';
+  } else {
+    bannerEl.style.display = 'none';
+  }
+
+  const avatarImg = document.getElementById('avatarImg');
+  if(profile.avatarUrl){
+    avatarImg.innerHTML = `<img src="${escapeHtml(profile.avatarUrl)}" alt="${escapeHtml(profile.name)}">`;
+  } else {
+    avatarImg.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:34px;font-weight:700;color:var(--gold-bright);">${escapeHtml(profile.name.charAt(0))}</div>`;
+  }
+  applyDynamicTheme(profile.avatarUrl);
+
+  const linksEl = document.getElementById('linksList');
+  linksEl.innerHTML = links.map(l => `
+    <a class="link-item" href="${escapeHtml(l.url)}" target="_blank" rel="noopener">
+      <span class="link-icon">${renderIcon(l.icon, l.customIcon)}</span>
+      <span class="link-label">${escapeHtml(l.label)}</span>
+      <span class="link-arrow">›</span>
+    </a>
+  `).join('');
+
+  const reviewsEl = document.getElementById('reviewsList');
+  if(!reviews.length){
+    reviewsEl.innerHTML = `<div class="reviews-empty">এখনো কোনো রিভিউ যোগ করা হয়নি।</div>`;
+  } else {
+    reviewsEl.innerHTML = reviews.map(r => `
+      <div class="review-card">
+        ${r.image ? `<img class="review-shot" src="${escapeHtml(r.image)}" alt="review screenshot">` : ''}
+        <div class="review-stars">${starString(r.stars)}</div>
+        ${r.text ? `<p class="review-text">${escapeHtml(r.text)}</p>` : ''}
+        <div class="review-foot">
+          <span class="review-name">${escapeHtml(r.name)}</span>
+          ${r.link ? `<a class="review-link" href="${escapeHtml(r.link)}" target="_blank" rel="noopener">সোর্স ↗</a>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('year').textContent = new Date().getFullYear();
+  document.getElementById('footBrand').textContent = profile.name;
+}
+
+if(document.body.dataset.page === 'public'){
+  document.addEventListener('DOMContentLoaded', () => { renderPublicPage(); });
+  document.addEventListener('click', (e) => {
+    const img = e.target.closest('.review-shot');
+    if(img) window.open(img.src, '_blank');
+  });
+}
+
+</script>
+</body>
+</html>

@@ -632,10 +632,6 @@ body{
         <div class="field"><label>ব্যানার লিংক</label><input id="f_bannerLink" placeholder="https://t.me/yourchannel"></div>
         <button class="btn" id="saveBannerBtn">ব্যানার সেভ করুন</button>
       </div>
-      <div class="admin-card">
-        <h3>ডেভলপার সেকশন 🔒</h3>
-        <p class="hint">ডেভলপার সেকশন (ছবিতে যেমন সাইটের নিচে দেখায়) ইচ্ছাকৃতভাবে অ্যাডমিন প্যানেল থেকে এডিট করা যায় না — এটা সরাসরি কোডে লক করা থাকে, যাতে সাইট ব্যবহারকারী এটা পরিবর্তন বা রিমুভ করতে না পারেন। এটা <code>app.js</code> ফাইলের <code>LOCKED_DEVELOPER</code> অংশে গিয়ে শুধু কোড এডিট করেই পরিবর্তন করা যাবে।</p>
-      </div>
     </div>
 
     <!-- SECURITY TAB -->
@@ -694,21 +690,6 @@ const ICONS = {
   chart: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 17l5-6 4 4 8-10" stroke="#23d5ab" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 5h5v5" stroke="#23d5ab" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
 };
 const ICON_KEYS = Object.keys(ICONS);
-
-/* ---------------- locked developer credit ----------------
-   This is intentionally NOT part of the editable admin data.
-   It is hardcoded here so the site owner (client) cannot remove
-   or edit the developer's attribution/contact section from the
-   admin panel. To change these details, edit this file directly.
-   ------------------------------------------------------------ */
-const LOCKED_DEVELOPER = Object.freeze({
-  role: 'Website Developer',
-  name: 'CW_ownerO',
-  avatarInitial: 'C',
-  telegramUrl: 'https://t.me/CW_ownerO',
-  websiteUrl: '',
-  ctaText: 'এই ধরনের ওয়েবসাইট দরকার? এখনই কন্ট্রাক্ট করুন'
-});
 
 /* ---------------- dynamic accent color from uploaded logo ---------------- */
 function rgbToHsl(r, g, b){
@@ -896,7 +877,6 @@ function starString(n){
 async function renderPublicPage(){
   const data = await loadData();
   const { profile, links, reviews } = data;
-  const developer = LOCKED_DEVELOPER;
 
   document.getElementById('brandName').textContent = profile.name;
   document.getElementById('brandTag').textContent = profile.tagline;
@@ -950,18 +930,6 @@ async function renderPublicPage(){
     `).join('');
   }
 
-  document.getElementById('devRole').textContent = developer.role;
-  document.getElementById('devName').textContent = developer.name;
-  document.getElementById('devAvatar').textContent = (developer.avatarInitial || developer.name.charAt(0) || 'D').toUpperCase();
-  const devLinks = document.getElementById('devLinks');
-  devLinks.innerHTML = [
-    developer.telegramUrl ? `<a href="${escapeHtml(developer.telegramUrl)}" target="_blank" rel="noopener">${ICONS.telegram}<span>Telegram</span></a>` : '',
-    developer.websiteUrl ? `<a href="${escapeHtml(developer.websiteUrl)}" target="_blank" rel="noopener">${ICONS.website}<span>Website</span></a>` : ''
-  ].filter(Boolean).join('');
-  const devCta = document.getElementById('devCta');
-  devCta.textContent = developer.ctaText;
-  devCta.href = developer.telegramUrl || developer.websiteUrl || '#';
-
   document.getElementById('year').textContent = new Date().getFullYear();
   document.getElementById('footBrand').textContent = profile.name;
 }
@@ -977,7 +945,6 @@ if(document.body.dataset.page === 'public'){
 </script>
 <script>
 const SESSION_PASS_KEY = 'rsts_admin_session_pass';
-const API_URL = '/api/data';
 
 function getSessionPass(){ return sessionStorage.getItem(SESSION_PASS_KEY) || ''; }
 function isLoggedIn(){ return !!getSessionPass(); }
